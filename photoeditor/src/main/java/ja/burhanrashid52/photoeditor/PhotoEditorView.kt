@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import ja.burhanrashid52.photoeditor.FilterImageView.OnImageChangedListener
+import ja.burhanrashid52.photoeditor.gl.filters.GLFilter
 
 /**
  *
@@ -156,6 +157,12 @@ class PhotoEditorView @JvmOverloads constructor(
         mImageFilterView.visibility = VISIBLE
         mImageFilterView.setSourceBitmap(mImgSource.bitmap)
         mImageFilterView.setFilterEffect(customEffect)
+    }
+
+    fun setGlFilter(glFilter: GLFilter) {
+        mImageFilterView.visibility = VISIBLE
+        mImageFilterView.setSourceBitmap(mImgSource.bitmap)
+        mImageFilterView.setGLFilter(glFilter)
     }
 
     fun setClipSourceImage(clip: Boolean) {

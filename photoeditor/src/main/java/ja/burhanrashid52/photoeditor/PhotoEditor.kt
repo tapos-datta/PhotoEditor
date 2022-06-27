@@ -10,6 +10,7 @@ import android.widget.ImageView
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
+import ja.burhanrashid52.photoeditor.gl.filters.GLFilter
 import ja.burhanrashid52.photoeditor.shape.ShapeBuilder
 
 /**
@@ -211,6 +212,13 @@ interface PhotoEditor {
      * @param customEffect [CustomEffect.Builder.setParameter]
      */
     fun setFilterEffect(customEffect: CustomEffect?)
+
+    /**
+     * Setup of OpenGL filter using GLFilter type
+     *
+     * @param glFilter type of GLFilter
+     */
+    fun setGlFilter(glFilter: GLFilter)
 
     /**
      * Set pre-define filter available

@@ -15,6 +15,8 @@ import android.util.AttributeSet
 import android.util.Log
 import ja.burhanrashid52.photoeditor.BitmapUtil.createBitmapFromGLSurface
 import ja.burhanrashid52.photoeditor.GLToolbox.initTexParams
+import ja.burhanrashid52.photoeditor.gl.GLFrameBuffer
+import ja.burhanrashid52.photoeditor.gl.filters.GLFilter
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -32,9 +34,12 @@ internal class ImageFilterView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : GLSurfaceView(context, attrs), GLSurfaceView.Renderer {
+    private var isNewFilter: Boolean = false
     private val mTextures = IntArray(2)
     private var mEffectContext: EffectContext? = null
     private var mEffect: Effect? = null
+    private var mGlFilter: GLFilter? = null
+    private var fbo: GLFrameBuffer = GLFrameBuffer()
     private val mTexRenderer: TextureRenderer = TextureRenderer()
     private var mImageWidth = 0
     private var mImageHeight = 0
@@ -60,9 +65,13 @@ internal class ImageFilterView @JvmOverloads constructor(
         mInitialized = false
     }
 
-    override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {}
+    override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+    }
+
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
         mTexRenderer.updateViewSize(width, height)
+        fbo.setup(width, height)
     }
 
     override fun onDrawFrame(gl: GL10) {
@@ -87,15 +96,39 @@ internal class ImageFilterView @JvmOverloads constructor(
         }
     }
 
+    fun setGLFilter(glFilter: GLFilter) {
+        queueEvent {
+            mGlFilter?.let {
+                mGlFilter!!.release()
+            }
+            mGlFilter = glFilter
+            isNewFilter = true
+            requestRender()
+        }
+    }
+
     fun setFilterEffect(effect: PhotoFilter?) {
         mCurrentEffect = effect
         mCustomEffect = null
-        requestRender()
+        queueEvent {
+            mGlFilter?.let {
+                it.release()
+            }
+            mGlFilter = null
+            requestRender()
+        }
     }
 
     fun setFilterEffect(customEffect: CustomEffect?) {
         mCustomEffect = customEffect
-        requestRender()
+        queueEvent {
+            mGlFilter?.let {
+                it.release()
+            }
+            mGlFilter = null
+            requestRender()
+        }
+
     }
 
     fun saveBitmap(onSaveBitmap: OnSaveBitmap?) {
@@ -188,7 +221,8 @@ internal class ImageFilterView @JvmOverloads constructor(
                         createEffect(EffectFactory.EFFECT_LOMOISH)
                     PhotoFilter.NEGATIVE -> mEffect =
                         createEffect(EffectFactory.EFFECT_NEGATIVE)
-                    PhotoFilter.NONE -> {}
+                    PhotoFilter.NONE -> {
+                    }
                     PhotoFilter.POSTERIZE -> mEffect =
                         createEffect(EffectFactory.EFFECT_POSTERIZE)
                     PhotoFilter.ROTATE -> {
@@ -225,7 +259,18 @@ internal class ImageFilterView @JvmOverloads constructor(
     }
 
     private fun renderResult() {
-        if (mCurrentEffect != PhotoFilter.NONE || mCustomEffect != null) {
+        if (mGlFilter != null) {
+            fbo.enable()
+            if (isNewFilter) {
+                mGlFilter!!.setup()
+                mGlFilter!!.setFrameSize(fbo.getWidth(), fbo.getHeight())
+                isNewFilter = false
+            }
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            mGlFilter!!.draw(mTextures[0], fbo)
+            mTexRenderer.renderTexture(fbo.getTextureId())
+
+        } else if (mCurrentEffect != PhotoFilter.NONE || mCustomEffect != null) {
             // if no effect is chosen, just render the original bitmap
             mTexRenderer.renderTexture(mTextures[1])
         } else {

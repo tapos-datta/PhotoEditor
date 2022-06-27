@@ -15,6 +15,7 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import ja.burhanrashid52.photoeditor.PhotoEditor.OnSaveListener
 import ja.burhanrashid52.photoeditor.PhotoEditorImageViewListener.OnSingleTapUpCallback
+import ja.burhanrashid52.photoeditor.gl.filters.GLFilter
 import ja.burhanrashid52.photoeditor.shape.ShapeBuilder
 
 /**
@@ -194,6 +195,10 @@ internal class PhotoEditorImpl @SuppressLint("ClickableViewAccessibility") const
 
     override fun setFilterEffect(filterType: PhotoFilter?) {
         photoEditorView.setFilterEffect(filterType)
+    }
+
+    override fun setGlFilter(glFilter: GLFilter) {
+        photoEditorView.setGlFilter(glFilter)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
