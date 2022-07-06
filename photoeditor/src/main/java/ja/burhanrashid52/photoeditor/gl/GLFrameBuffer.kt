@@ -9,21 +9,21 @@ import ja.burhanrashid52.photoeditor.GLToolbox
 
 class GLFrameBuffer {
 
-    private var width : Int = 0
-    private var height : Int = 0
-    private var frameBufferName : Int = -1
-    private var renderBufferName : Int = -1
+    private var width: Int = 0
+    private var height: Int = 0
+    private var frameBufferName: Int = -1
+    private var renderBufferName: Int = -1
     private var textureName: Int = -1
 
-    fun getWidth() : Int{
+    fun getWidth(): Int {
         return width
     }
 
-    fun getHeight() : Int{
+    fun getHeight(): Int {
         return height
     }
 
-    fun getTextureId() : Int{
+    fun getTextureId(): Int {
         return textureName
     }
 
@@ -105,9 +105,13 @@ class GLFrameBuffer {
             release()
             throw e
         }
+
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, saveFrameBuffer)
+        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, saveRenderBuffer)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, saveTextureName)
     }
 
-    private fun release() {
+    fun release() {
         val args = intArrayOf(textureName)
         GLES20.glDeleteTextures(args.size, args, 0)
         textureName = -1
